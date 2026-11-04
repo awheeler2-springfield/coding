@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An Interactive Exercise in Inductive Coding and Thematic Interpretation</title>
+<style>
+:root {
+  --ink:#243239;
+  --muted:#596b72;
+  --accent:#176b70;
+  --pale:#edf5f4;
+  --line:#d5dfe0;
+  --bg:#f6f8f8;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:16px/1.55 system-ui,Arial,sans-serif;
+}
+main {max-width:1100px;margin:auto;padding:36px 22px 80px}
+h1 {font-size:clamp(25px,3vw,37px);line-height:1.2;margin:0 0 12px}
+h2 {font-size:25px;margin:0 0 12px}
+h3 {font-size:18px;margin:0 0 10px}
+p {margin:8px 0 16px}
+small,.muted {color:var(--muted)}
+.panel {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:26px;
+  margin:22px 0;
+}
+button {
+  font:inherit;
+  font-weight:600;
+  background:var(--accent);
+  color:white;
+  border:1px solid var(--accent);
+  border-radius:7px;
+  padding:11px 17px;
+  cursor:pointer;
+}
+button.secondary {background:white;color:var(--accent)}
+button:disabled {opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus,textarea:focus,select:focus {
+  outline:3px solid #8fc4c2;
+  outline-offset:2px;
+}
+.buttons {display:flex;justify-content:space-between;gap:12px;margin-top:25px;flex-wrap:wrap}
+input,textarea,select {
+  width:100%;
+  border:1px solid #aabbbd;
+  border-radius:7px;
+  padding:11px;
+  font:inherit;
+  color:var(--ink);
+  background:white;
+}
+textarea {min-height:110px;resize:vertical}
+label {display:block;font-weight:600;margin:15px 0 6px}
+.stages {
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+  margin:25px 0;
+}
+.stage {
+  border-top:4px solid var(--line);
+  padding-top:9px;
+  color:var(--muted);
+  font-size:12px;
+}
+.stage.active {border-color:var(--accent);font-weight:700;color:var(--ink)}
+.stage.done {border-color:#94bcb8}
+.quote {
+  background:#f8faf9;
+  border-left:3px solid var(--accent);
+  padding:16px;
+  margin:14px 0;
+}
+.quote p {font-size:17px;margin:0 0 7px}
+.quote-grid {display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.quote-grid .quote {margin:0}
+.hint {
+  background:var(--pale);
+  border:1px solid #d3e6e3;
+  border-radius:8px;
+  padding:14px;
+  margin:17px 0;
+}
+.feedback {
+  background:#fff8ec;
+  border-left:3px solid #b77b35;
+  padding:13px;
+  margin-top:16px;
+}
+.board {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin:20px 0;
+}
+.zone {
+  border:2px dashed #b9c9ca;
+  background:#f8faf9;
+  border-radius:8px;
+  min-height:190px;
+  padding:12px;
+}
+.zone.over {background:var(--pale);border-color:var(--accent)}
+.zone h3 {font-size:15px}
+.card {
+  background:white;
+  border:1px solid #b9c9ca;
+  border-radius:7px;
+  padding:12px;
+  margin:8px 0;
+  cursor:grab;
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+.card.selected {outline:2px solid var(--accent);background:var(--pale)}
+.card small {display:block}
+.topbar {display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pill {border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px}
+details {margin:15px 0}
+summary {cursor:pointer;color:var(--accent);font-weight:600}
+footer {color:var(--muted);font-size:13px;margin-top:40px}
+@media(max-width:750px) {
+  .board,.quote-grid {grid-template-columns:1fr}
+  .stages {grid-template-columns:repeat(3,1fr)}
+  .panel {padding:18px}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>An Interactive Exercise in Inductive Coding and Thematic Interpretation</h1>
+<p class="muted">A two-level exercise in developing, testing, and revising interpretations of healthcare practitioners' accounts.</p>
+</header>
+<div id="app"></div>
+<footer>
+All interview excerpts are fictional. Responses are saved locally in this browser and are not transmitted to a server.
+</footer>
+</main>
+
+<script>
+"use strict";
+
+const stages=[
+ "Quotation","Code","Relationship",
+ "Interpretive Statement","Thematic Name","Revision"
+];
+
+const cases=[
+{
+ title:"Level 1 — Guided Investigation",
+ intro:"Examine six practitioners' accounts of everyday healthcare work.",
+ quotes:[
+ ["Nurse","I stayed after my shift to sit with her daughter. There is no place in the chart to record that conversation."],
+ ["Physician","I try not to show patients how uncertain I sometimes feel. They need to believe someone has a plan."],
+ ["Physical therapist","The authorization covers six visits. Sometimes I have to squeeze what should be eight visits into those six."],
+ ["Social worker","I know which forms will get someone help fastest, even when the official process says to do things differently."],
+ ["Medical assistant","I can tell when someone needs a minute before we start, but the schedule doesn't leave a minute."],
+ ["Nurse practitioner","Patients thank me for listening. I wish listening counted as something we had time to do."]
+ ],
+ twist:["Occupational therapist","I used to stay late for everyone. Now I leave on time because exhausted clinicians cannot offer good care. I think boundaries are part of the work."]
+},
+{
+ title:"Level 2 — Independent Investigation",
+ intro:"Consider a more complex set of accounts involving expertise, trust, professional authority, and patient autonomy.",
+ quotes:[
+ ["Emergency physician","I can explain every test result, but sometimes what the family wants is for me to say everything will be all right. I cannot promise that."],
+ ["Home health nurse","In the home, the patient decides whether I am welcome. That changes the conversation compared with the hospital."],
+ ["Pharmacist","I catch medication problems that nobody notices because the prescription looks perfectly normal on paper."],
+ ["Community health worker","People call me before they call the clinic. I know the system, but they also know I will answer."],
+ ["Resident physician","The attending wants a clear recommendation. The patient wants options. Sometimes I am not sure whose question I am answering."],
+ ["Physical therapist","When someone refuses an exercise, I ask what matters to them. Sometimes the goal in the chart is not their goal."]
+ ],
+ twist:["Clinic manager","Standard procedures can protect patients from arbitrary decisions. I worry when staff improvise because the person with the strongest advocate may get more than the person who stays quiet."]
+}
+];
+
+const KEY="inductive-exercise-v2";
+
+function fresh(level=0){
+ return {
+  level,step:0,
+  codes:Array(6).fill(""),
+  groups:Array(6).fill(-1),
+  relations:["","",""],
+  statement:"",
+  theme:"",
+  choice:"",
+  revision:""
+ };
+}
+
+let progress={unlocked:0,completed:[false,false]};
+let work=fresh();
+
+try {
+ const saved=JSON.parse(localStorage.getItem(KEY));
+ if(saved && saved.progress && saved.work){
+  progress=saved.progress;
+  work=saved.work;
+ }
+} catch(e){}
+
+const app=document.getElementById("app");
+
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify({progress,work}));}catch(e){}
+}
+function safe(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ })[c]);
+}
+function stageBar(){
+ return '<div class="stages">'+stages.map((s,i)=>
+  `<div class="stage ${i===work.step?"active":i<work.step?"done":""}">${i+1}. ${s}</div>`
+ ).join("")+'</div>';
+}
+function quote(i){
+ const [role,text]=cases[work.level].quotes[i];
+ return `<div class="quote"><p>“${safe(text)}”</p><small>${safe(role)} · Fictional interview excerpt ${i+1}</small></div>`;
+}
+function hint(content){
+ return `<details><summary>Optional analytical guidance</summary><div class="hint">${content}</div></details>`;
+}
+function navigation(label="Continue"){
+ return `<div class="buttons"><button class="secondary" id="back">Previous</button><button id="next">${label}</button></div>`;
+}
+function showFeedback(message){
+ document.getElementById("feedback").innerHTML=
+ `<div class="feedback">${safe(message)}</div>`;
+}
+function home(){
+ app.innerHTML=`
+ <section class="panel">
+ <h2>The analytical progression</h2>
+ <p>Move through six stages:</p>
+ <div class="stages">${stages.map((s,i)=>`<div class="stage active">${i+1}. ${s}</div>`).join("")}</div>
+ <p>Complete the guided level before beginning the independent level. There are no predetermined thematic answers. Your task is to construct and justify an interpretation.</p>
+ <div class="quote-grid">
+ <div class="panel">
+ <h3>Level 1 — Guided Investigation</h3>
+ <p>Learn the analytical process through structured questions and examples.</p>
+ <button id="start0">${work.level===0&&work.step>0&&!progress.completed[0]?"Continue Level 1":"Begin Level 1"}</button>
+ </div>
+ <div class="panel">
+ <h3>Level 2 — Independent Investigation</h3>
+ <p>Work with more ambiguous accounts and reduced guidance.</p>
+ <button id="start1" ${progress.unlocked<1?"disabled":""}>${progress.unlocked<1?"Complete Level 1 to unlock":"Begin Level 2"}</button>
+ </div>
+ </div>
+ <p class="muted">After both levels, apply the same six moves to your own printed interview transcript.</p>
+ </section>`;
+ document.getElementById("start0").onclick=()=>start(0);
+ document.getElementById("start1").onclick=()=>start(1);
+}
+function start(level){
+ if(level>progress.unlocked)return;
+ if(work.level!==level || progress.completed[level])work=fresh(level);
+ save();render();
+}
+
+function capture(){
+ const s=work.step;
+ if(s===1)work.codes=work.codes.map((v,i)=>
+  document.getElementById("code"+i)?.value.trim()??v);
+ if(s===2)for(let i=0;i<3;i++){
+  const field=document.getElementById("rel"+i);
+  if(field)work.relations[i]=field.value.trim();
+ }
+ if(s===3)work.statement=document.getElementById("statement").value.trim();
+ if(s===4)work.theme=document.getElementById("theme").value.trim();
+ if(s===5){
+  work.choice=document.getElementById("choice").value;
+  work.revision=document.getElementById("revision").value.trim();
+ }
+ save();
+}
+
+function render(){
+ const c=cases[work.level],s=work.step;
+ let html=`<div class="topbar"><span class="pill">${safe(c.title)}</span><button class="secondary" id="home">Levels</button></div>${stageBar()}<section class="panel">`;
+
+ if(s===0){
+  html+=`<h2>1. Quotation — Notice</h2>
+  <p>Read these practitioner accounts. Attend to language, actions, values, contradictions, and assumptions that seem analytically significant.</p>
+  <div class="quote-grid">${c.quotes.map((_,i)=>quote(i)).join("")}</div>`;
+  if(work.level===0)html+=`<div class="hint"><strong>Notice:</strong> What does each practitioner describe doing? What makes that action necessary? What might otherwise remain invisible?</div>`;
+  else html+=hint("Consider how professional roles shape what each practitioner can say, do, or know.");
+  html+=navigation("Begin coding");
+ }
+
+ if(s===1){
+  html+=`<h2>2. Code — Name</h2>
+  <p>Generate an inductive code for each quotation. Use a short phrase that captures an action, experience, value, or tension in the practitioner's account.</p>`;
+  c.quotes.forEach((_,i)=>{
+   html+=quote(i)+`<label for="code${i}">Inductive code ${i+1}</label><input id="code${i}" maxlength="120" value="${safe(work.codes[i])}" placeholder="Enter your code">`;
+  });
+  if(work.level===0)html+=`<div class="hint"><strong>Example:</strong> “There's no place in the chart to record that conversation” might suggest <em>unrecognized emotional labor</em>. This is one possible interpretation, not the required answer.</div>`;
+  else html+=hint("Ask what the practitioner is negotiating rather than simply naming the general topic.");
+  html+=navigation("Examine relationships");
+ }
+
+ if(s===2){
+  html+=`<h2>3. Relationship — Connect</h2>
+  <p>Drag your code cards into clusters that represent meaningful relationships. You may leave codes unassigned.</p>
+  <p class="muted">A relationship may involve similarity, contradiction, cause and consequence, or different responses to a shared problem.</p>
+  <p class="muted">You can also click a card and then click its destination cluster.</p>
+  <div class="board" id="board"></div>
+  <div id="relations"></div>`;
+  if(work.level===0)html+=`<div class="hint">Do not group codes merely because they concern healthcare. Ask what connects the experiences analytically. Why might they occur together?</div>`;
+  else html+=hint("Consider whether the same code might participate in more than one relationship. Choose the grouping that best supports your emerging interpretation.");
+  html+=navigation("Explain the pattern");
+ }
+
+ if(s===3){
+  html+=`<h2>4. Interpretive Statement — Explain</h2>
+  <p>What larger pattern does your grouping reveal? Write a complete statement explaining what seems to be happening across these accounts.</p>
+  <p><strong>Move beyond a topic.</strong> Explain a relationship, tension, or process that your evidence suggests.</p>`;
+  if(work.level===0)html+=`<div class="hint">Possible sentence structure: “Across these accounts, practitioners appear to ______ because ______, even though ______.”</div>`;
+  else html+=hint("What might these experiences reveal about healthcare that a formal job description would not?");
+  html+=`<label for="statement">Your interpretive statement</label><textarea id="statement" placeholder="Across these accounts, I notice that...">${safe(work.statement)}</textarea>`;
+  html+=navigation("Develop a thematic name");
+ }
+
+ if(s===4){
+  html+=`<h2>5. Thematic Name — Distill</h2>
+  <p>Give your interpretation a concise thematic name. It should communicate an insight rather than merely identify a subject.</p>
+  <div class="hint"><strong>Your interpretive statement</strong><p>${safe(work.statement)}</p></div>
+  <label for="theme">Thematic name</label><input id="theme" maxlength="140" value="${safe(work.theme)}" placeholder="Name the pattern">`;
+  if(work.level===0)html+=`<p class="muted">Compare a topic such as “workplace stress” with an interpretation such as “When compassionate care requires invisible labor.”</p>`;
+  else html+=hint("Could your title apply to almost any healthcare interview? If so, make it more specific.");
+  html+=navigation("Test your interpretation");
+ }
+
+ if(s===5){
+  const [role,text]=c.twist;
+  html+=`<h2>6. Revision — Reconsider</h2>
+  <p>A new practitioner account complicates your interpretation. Consider what it changes.</p>
+  <div class="quote"><p>“${safe(text)}”</p><small>${safe(role)} · Additional fictional excerpt</small></div>
+  <div class="hint"><strong>Your thematic name:</strong> ${safe(work.theme)}<p><strong>Your interpretation:</strong> ${safe(work.statement)}</p></div>
+  <label for="choice">How does the new evidence affect your interpretation?</label>
+  <select id="choice">
+  <option value="">Select a response</option>
+  ${["Retain with justification","Qualify the interpretation","Revise the interpretation","Reconsider the proposed pattern"].map(x=>`<option value="${x}" ${work.choice===x?"selected":""}>${x}</option>`).join("")}
+  </select>
+  <label for="revision">Explain your decision using evidence from the quotations.</label>
+  <textarea id="revision" placeholder="This new account suggests...">${safe(work.revision)}</textarea>`;
+  if(work.level===0)html+=`<p class="muted">Contradictory evidence may reveal limits, exceptions, or a more complex pattern. It does not automatically invalidate an interpretation.</p>`;
+  else html+=hint("Does the new account challenge your entire interpretation, or only the scope of your claim?");
+  html+=navigation("Complete level");
+ }
+
+ html+='<div id="feedback" role="status"></div></section>';
+ app.innerHTML=html;
+ document.getElementById("home").onclick=()=>{capture();home();};
+ document.getElementById("back").onclick=()=>{
+  capture();
+  if(work.step===0)home();
+  else {work.step--;save();render();}
+ };
+ document.getElementById("next").onclick=advance;
+ if(s===2)drawBoard();
+}
+
+function drawBoard(){
+ const board=document.getElementById("board");
+ board.innerHTML=[-1,0,1,2].map(z=>`
+ <div class="zone" data-zone="${z}" tabindex="0">
+ <h3>${z===-1?"Unassigned":"Cluster "+(z+1)}</h3>
+ ${work.codes.map((code,i)=>work.groups[i]===z?`
+ <div class="card" draggable="true" tabindex="0" data-id="${i}">
+ <small>${safe(cases[work.level].quotes[i][0])}</small>
+ ${safe(code)}
+ </div>`:"").join("")}
+ </div>`).join("");
+
+ let selected=null;
+
+ board.querySelectorAll(".card").forEach(card=>{
+  card.addEventListener("dragstart",e=>{
+   e.dataTransfer.setData("text/plain",card.dataset.id);
+  });
+  card.addEventListener("click",()=>{
+   board.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));
+   selected=Number(card.dataset.id);
+   card.classList.add("selected");
+  });
+  card.addEventListener("keydown",e=>{
+   if(e.key==="Enter"||e.key===" "){
+    e.preventDefault();card.click();
+   }
+  });
+ });
+
+ board.querySelectorAll(".zone").forEach(zone=>{
+  zone.addEventListener("dragover",e=>{
+   e.preventDefault();zone.classList.add("over");
+  });
+  zone.addEventListener("dragleave",()=>zone.classList.remove("over"));
+  zone.addEventListener("drop",e=>{
+   e.preventDefault();
+   zone.classList.remove("over");
+   const id=Number(e.dataTransfer.getData("text/plain"));
+   if(Number.isInteger(id)&&id>=0&&id<6)move(id,Number(zone.dataset.zone));
+  });
+  zone.addEventListener("click",e=>{
+   if(selected!==null&&!e.target.closest(".card"))
+    move(selected,Number(zone.dataset.zone));
+  });
+  zone.addEventListener("keydown",e=>{
+   if(selected!==null&&(e.key==="Enter"||e.key===" ")){
+    e.preventDefault();move(selected,Number(zone.dataset.zone));
+   }
+  });
+ });
+ drawRelations();
+}
+
+function move(id,zone){
+ capture();
+ work.groups[id]=zone;
+ save();drawBoard();
+}
+
+function drawRelations(){
+ document.getElementById("relations").innerHTML=[0,1,2]
+ .filter(i=>work.groups.filter(g=>g===i).length>=2)
+ .map(i=>`<label for="rel${i}">Cluster ${i+1}: What connects these codes?</label>
+ <textarea id="rel${i}" placeholder="These codes are connected because...">${safe(work.relations[i])}</textarea>`)
+ .join("")||'<p class="muted">Place at least two codes in a cluster to explain their relationship.</p>';
+}
+
+function advance(){
+ capture();
+ const s=work.step;
+
+ if(s===1&&work.codes.some(x=>x.length<3))
+  return showFeedback("Provide an inductive code for each quotation before proceeding.");
+
+ if(s===2){
+  const clusters=[0,1,2].filter(i=>work.groups.filter(g=>g===i).length>=2);
+  if(!clusters.length)
+   return showFeedback("Create at least one cluster containing two or more codes.");
+  if(clusters.some(i=>work.relations[i].length<20))
+   return showFeedback("Explain why the codes in each populated cluster are related. A topic label alone is insufficient.");
+ }
+
+ if(s===3&&work.statement.length<45)
+  return showFeedback("Develop a fuller interpretive statement. What does the relationship between these experiences suggest?");
+
+ if(s===4){
+  if(work.theme.length<8)
+   return showFeedback("Develop a more specific thematic name.");
+  if(/^(stress|communication|burnout|empathy|care|teamwork|time|workload|uncertainty|patient care|workplace stress)$/i.test(work.theme))
+   return showFeedback("This names a broad topic. What specific relationship or tension does your interpretation reveal?");
+ }
+
+ if(s===5){
+  if(!work.choice||work.revision.length<50)
+   return showFeedback("Select a response and explain how the additional evidence affects your interpretation.");
+  progress.completed[work.level]=true;
+  progress.unlocked=Math.max(progress.unlocked,Math.min(1,work.level+1));
+  save();completion();return;
+ }
+
+ work.step++;
+ save();render();
+ window.scrollTo(0,0);
+}
+
+function completion(){
+ const final=work.level===1;
+ app.innerHTML=`<section class="panel">
+ <h2>${final?"Independent Investigation Complete":"Guided Investigation Complete"}</h2>
+ <p>You have moved from individual quotations to a provisional, evidence-based interpretation and reconsidered it in light of additional evidence.</p>
+ <h3>Your interpretive statement</h3><p>${safe(work.statement)}</p>
+ <h3>Your thematic name</h3><p>${safe(work.theme)}</p>
+ <h3>Your revision</h3><p>${safe(work.revision)}</p>
+ ${final?`
+ <div class="hint">
+ <h3>Now apply the method to your own interview</h3>
+ <p>Work with your printed transcript. Repeat the progression:</p>
+ <p><strong>Quotation → Code → Relationship → Interpretive Statement → Thematic Name → Revision</strong></p>
+ <p>Inductively code passages, compare codes, identify relationships, and test emerging interpretations against evidence that complicates them.</p>
+ </div>
+ <div class="buttons"><button class="secondary" id="home">Return to levels</button><button id="continue">Replay Level 2</button></div>
+ `:`
+ <div class="buttons"><button class="secondary" id="home">Return to levels</button><button id="continue">Continue to Level 2</button></div>
+ `}
+ </section>`;
+ document.getElementById("home").onclick=home;
+ document.getElementById("continue").onclick=()=>start(1);
+}
+
+home();
+</script>
+</body>
+</html>
